@@ -1,14 +1,14 @@
 import { NewsFeedsContainer } from '../components/render/NewsFeedsContainer/NewsFeedsContainer'
+import { ArticleStage } from '../components/render/ArticleStage/ArticleStage'
+import { EmptyState } from '../components/render/EmptyState/EmptyState'
 import {
-  useSubtitleStoreState,
   useUiScaleStoreState,
   useSelectedFeedsStoreState,
   useArticleDurationStoreState,
   useRefreshIntervalStoreState,
   useTransitionStyleStoreState,
 } from '../hooks/store'
-import type { AppConfig } from '../types'
-import wordMarkPath from '../../assets/telemetryos-wordmark.svg'
+import type { AppConfig, Article } from '../types'
 import './Render.css'
 
 /**
@@ -20,7 +20,6 @@ import './Render.css'
  */
 export function Render() {
   const [, uiScale] = useUiScaleStoreState()
-  const [isLoadingSubtitle, subtitle] = useSubtitleStoreState()
   const [isLoadingSelected, selectedFeeds] = useSelectedFeedsStoreState()
   const [isLoadingDuration, articleDurationSec] = useArticleDurationStoreState()
   const [isLoadingInterval, refreshIntervalMin] = useRefreshIntervalStoreState()
@@ -34,41 +33,26 @@ export function Render() {
     transitionStyle,
   }
 
-  const isLoading = isLoadingSubtitle || isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition
+  const isLoading = isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition
+
+  // Hardcoded article for layout preview
+  const dummyArticle: Article = {
+    title: 'Major Breakthrough in Renewable Energy Technology',
+    description: 'Scientists have developed a new solar panel technology that increases efficiency by 40% while reducing manufacturing costs. The innovation uses advanced nanomaterials to capture more sunlight throughout the day, even in cloudy conditions. This breakthrough could accelerate the global transition to clean energy.',
+    link: 'https://example.com/article',
+    publishedAt: Date.now() - 2 * 60 * 60 * 1000, // 2 hours ago
+    sourceId: 'bbc',
+    imageUrl: undefined, // No image for now
+    sourceLogoUrl: undefined,
+  }
 
   return (
     <NewsFeedsContainer uiScale={uiScale} config={config} isLoading={isLoading}>
-      <div className="render">
-        <img src={wordMarkPath} alt="TelemetryOS" className="render__logo" />
-        <div className="render__hero">
-          {uiScale < 1.5 && (
-            <div className="render__hero-title">Welcome to TelemetryOS SDK</div>
-          )}
-          <div className="render__hero-subtitle">{isLoading ? 'Loading...' : subtitle}</div>
-        </div>
-        <div className="render__docs-information">
-          {uiScale < 1.2 && (
-            <>
-              <div className="render__docs-information-title">
-                To get started, edit the Render.tsx and Settings.tsx files
-              </div>
-              <div className="render__docs-information-text">
-                Visit our documentation on building applications to learn more
-              </div>
-            </>
-          )}
-          {uiScale < 1.35 && (
-            <a
-              className="render__docs-information-button"
-              href="https://docs.telemetryos.com/docs/sdk-getting-started"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Documentation
-            </a>
-          )}
-        </div>
-      </div>
+      {!isLoadingSelected && selectedFeeds.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <ArticleStage article={dummyArticle} sourceName="BBC" />
+      )}
     </NewsFeedsContainer>
   )
 }

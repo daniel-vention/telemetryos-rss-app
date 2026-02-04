@@ -1,0 +1,14 @@
+.time-ago {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+}
+
+.time-ago__label {
+  font-weight: 500;
+}
+
+.time-ago__value {
+  font-weight: 600;
+}
