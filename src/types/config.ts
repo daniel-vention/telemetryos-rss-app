@@ -4,6 +4,11 @@
 export type TransitionStyle = 'fade' | 'slide' | 'cut'
 
 /**
+ * Available transition styles array
+ */
+export const TRANSITION_STYLES: TransitionStyle[] = ['fade', 'slide', 'cut']
+
+/**
  * App Configuration DTO - Represents the application settings and state
  */
 export interface AppConfig {

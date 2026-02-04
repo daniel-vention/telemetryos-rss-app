@@ -1,6 +1,13 @@
 import { NewsFeedsContainer } from '../components/render/NewsFeedsContainer/NewsFeedsContainer'
-import { useSubtitleStoreState, useUiScaleStoreState } from '../hooks/store'
-import { DEFAULT_CONFIG } from '../types'
+import {
+  useSubtitleStoreState,
+  useUiScaleStoreState,
+  useSelectedFeedsStoreState,
+  useArticleDurationStoreState,
+  useRefreshIntervalStoreState,
+  useTransitionStyleStoreState,
+} from '../hooks/store'
+import type { AppConfig } from '../types'
 import wordMarkPath from '../../assets/telemetryos-wordmark.svg'
 import './Render.css'
 
@@ -9,13 +16,25 @@ import './Render.css'
  * 
  * Kept thin and declarative per cursor rules.
  * Main logic and UI scaling handled by NewsFeedsContainer.
+ * Subscribes to instance storage to react instantly when operators modify selections.
  */
 export function Render() {
   const [, uiScale] = useUiScaleStoreState()
-  const [isLoading, subtitle] = useSubtitleStoreState()
+  const [isLoadingSubtitle, subtitle] = useSubtitleStoreState()
+  const [isLoadingSelected, selectedFeeds] = useSelectedFeedsStoreState()
+  const [isLoadingDuration, articleDurationSec] = useArticleDurationStoreState()
+  const [isLoadingInterval, refreshIntervalMin] = useRefreshIntervalStoreState()
+  const [isLoadingTransition, transitionStyle] = useTransitionStyleStoreState()
 
-  // TODO: Replace with actual config from instance storage
-  const config = DEFAULT_CONFIG
+  // Build config from instance storage - automatically subscribes to changes
+  const config: AppConfig = {
+    selectedFeeds,
+    articleDurationSec,
+    refreshIntervalMin,
+    transitionStyle,
+  }
+
+  const isLoading = isLoadingSubtitle || isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition
 
   return (
     <NewsFeedsContainer uiScale={uiScale} config={config} isLoading={isLoading}>

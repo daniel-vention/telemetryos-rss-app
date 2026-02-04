@@ -6,7 +6,7 @@ import {
   SettingsLabel,
   SettingsSliderFrame,
 } from '@telemetryos/sdk/react'
-import { RssFeedManager } from '../components/settings'
+import { RssFeedManager, FeedSelectionConfig } from '../components/settings'
 import { useSubtitleStoreState, useUiScaleStoreState } from '../hooks/store'
 
 export function Settings() {
@@ -16,7 +16,7 @@ export function Settings() {
   return (
     <SettingsContainer>
       <RssFeedManager />
-
+      <FeedSelectionConfig />
       <SettingsDivider />
 
       {/* Legacy demo fields - can be removed later */}

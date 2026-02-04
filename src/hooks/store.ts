@@ -1,5 +1,5 @@
 import { createUseInstanceStoreState } from '@telemetryos/sdk/react'
-import type { RssFeed } from '../types'
+import type { Article, RssFeed } from '../types'
 import type { TransitionStyle } from '../types'
 import { DEFAULT_CONFIG } from '../types'
 
@@ -10,6 +10,8 @@ export const useSubtitleStoreState = createUseInstanceStoreState<string>('subtit
 export const useRssFeedsStoreState = createUseInstanceStoreState<RssFeed[]>('rssFeeds', [])
 
 export const useSelectedFeedsStoreState = createUseInstanceStoreState<string[]>('selectedFeeds', DEFAULT_CONFIG.selectedFeeds)
+
+export const useCachedArticlesStoreState = createUseInstanceStoreState<Article[]>('cachedArticles', [])
 
 export const useArticleDurationStoreState = createUseInstanceStoreState<number>('articleDurationSec', DEFAULT_CONFIG.articleDurationSec)
 
