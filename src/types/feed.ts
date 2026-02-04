@@ -8,4 +8,22 @@ export interface RssFeed {
   name: string
   /** RSS/Atom feed URL */
   url: string
+  /** Category for organizing feeds (e.g., "News", "Sport", "Finance") */
+  category: string
+  /** Logo/brand image URL for the feed (optional) */
+  logoUrl?: string
 }
+
+/**
+ * Common RSS feed categories
+ */
+export const COMMON_CATEGORIES = [
+  'News',
+  'Sport',
+  'Finance',
+  'Tech',
+  'Entertainment',
+  'Weather/Safety',
+  'Science',
+  'Custom',
+] as const

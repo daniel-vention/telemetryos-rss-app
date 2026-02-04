@@ -1,1 +1,1 @@
-no endpoints provided
+no endpoints provided for rss feed

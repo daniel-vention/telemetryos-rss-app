@@ -1,4 +1,4 @@
-import { NewsFeedsContainer } from '../components'
+import { NewsFeedsContainer } from '../components/render/NewsFeedsContainer/NewsFeedsContainer'
 import { useSubtitleStoreState, useUiScaleStoreState } from '../hooks/store'
 import { DEFAULT_CONFIG } from '../types'
 import wordMarkPath from '../../assets/telemetryos-wordmark.svg'
