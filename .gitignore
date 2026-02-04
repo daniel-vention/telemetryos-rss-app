@@ -25,6 +25,12 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Windsurf
+.windsurf/
+
+# Cursor
+.cursor/
+
 # Claude Code
 .claude/settings.local.json
 .claude/CLAUDE.local.md

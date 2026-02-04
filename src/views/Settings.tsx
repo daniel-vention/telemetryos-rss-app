@@ -6,6 +6,7 @@ import {
   SettingsLabel,
   SettingsSliderFrame,
 } from '@telemetryos/sdk/react'
+import { RssFeedManager } from '../components/settings'
 import { useSubtitleStoreState, useUiScaleStoreState } from '../hooks/store'
 
 export function Settings() {
@@ -14,7 +15,11 @@ export function Settings() {
 
   return (
     <SettingsContainer>
+      <RssFeedManager />
 
+      <SettingsDivider />
+
+      {/* Legacy demo fields - can be removed later */}
       <SettingsField>
         <SettingsLabel>UI Scale</SettingsLabel>
         <SettingsSliderFrame>
@@ -45,7 +50,6 @@ export function Settings() {
           />
         </SettingsInputFrame>
       </SettingsField>
-
     </SettingsContainer>
   )
 }
