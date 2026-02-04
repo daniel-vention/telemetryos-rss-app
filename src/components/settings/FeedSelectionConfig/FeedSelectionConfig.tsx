@@ -127,7 +127,7 @@ export function FeedSelectionConfig() {
         <>
           {Object.entries(feedsByCategory).map(([category, categoryFeeds]) => (
             <div key={category} className="feed-selection-category">
-              <SettingsHeading style={{ fontSize: '1em', marginBottom: '0.75rem' }}>
+              <SettingsHeading>
                 {category}
               </SettingsHeading>
               <SettingsBox>

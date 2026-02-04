@@ -18,3 +18,5 @@ export const useArticleDurationStoreState = createUseInstanceStoreState<number>(
 export const useRefreshIntervalStoreState = createUseInstanceStoreState<number>('refreshIntervalMin', DEFAULT_CONFIG.refreshIntervalMin)
 
 export const useTransitionStyleStoreState = createUseInstanceStoreState<TransitionStyle>('transitionStyle', DEFAULT_CONFIG.transitionStyle)
+
+export const useRandomStringStoreState = createUseInstanceStoreState<string>('randomString', '')

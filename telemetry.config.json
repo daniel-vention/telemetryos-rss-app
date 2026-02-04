@@ -6,6 +6,11 @@
     "render": "/render",
     "settings": "/settings"
   },
+  "workers": [
+    {
+      "script": "./workers/randomStringWorker.js"
+    }
+  ],
   "devServer": {
     "runCommand": "vite --port 3000",
     "url": "http://localhost:3000"

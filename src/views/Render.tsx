@@ -7,6 +7,7 @@ import {
   useArticleDurationStoreState,
   useRefreshIntervalStoreState,
   useTransitionStyleStoreState,
+  useRandomStringStoreState,
 } from '../hooks/store'
 import type { AppConfig, Article } from '../types'
 import './Render.css'
@@ -24,6 +25,7 @@ export function Render() {
   const [isLoadingDuration, articleDurationSec] = useArticleDurationStoreState()
   const [isLoadingInterval, refreshIntervalMin] = useRefreshIntervalStoreState()
   const [isLoadingTransition, transitionStyle] = useTransitionStyleStoreState()
+  const [isLoadingRandomString, randomString] = useRandomStringStoreState()
 
   // Build config from instance storage - automatically subscribes to changes
   const config: AppConfig = {
@@ -51,8 +53,14 @@ export function Render() {
       {!isLoadingSelected && selectedFeeds.length === 0 ? (
         <EmptyState />
       ) : (
-        <ArticleStage article={dummyArticle} sourceName="BBC" />
+        <>
+          <ArticleStage article={dummyArticle} sourceName="BBC" />
+        </>
       )}
+      <div className="random-string-container">
+        sample text {isLoadingRandomString ? 'loading...' : randomString}
+      </div>
+      
     </NewsFeedsContainer>
   )
 }
