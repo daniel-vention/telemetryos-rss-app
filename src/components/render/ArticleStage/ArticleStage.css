@@ -15,6 +15,10 @@
   min-height: 0;
 }
 
+.article-stage__main--no-image {
+  grid-template-columns: 1fr;
+}
+
 .article-stage__content {
   display: flex;
   flex-direction: column;

@@ -8,9 +8,9 @@ import {
   SettingsDivider,
   SettingsHint,
 } from '@telemetryos/sdk/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRssFeedsStoreState } from '../../../hooks/store'
-import { COMMON_CATEGORIES } from '../../../types'
+import { COMMON_CATEGORIES, DEFAULT_FEEDS } from '../../../types'
 import type { RssFeed } from '../../../types'
 import './RssFeedManager.css'
 
@@ -31,6 +31,14 @@ export function RssFeedManager() {
   const [editUrl, setEditUrl] = useState('')
   const [editLogoUrl, setEditLogoUrl] = useState('')
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+
+  // Initialize with default feeds on first load if no feeds exist
+  useEffect(() => {
+    if (!isLoading && (!feeds || feeds.length === 0)) {
+      console.log('Initializing with 14 pre-configured RSS feeds')
+      setFeeds(DEFAULT_FEEDS)
+    }
+  }, [isLoading, feeds, setFeeds])
 
   const generateId = useCallback(() => {
     return `feed-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`

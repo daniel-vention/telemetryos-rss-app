@@ -37,8 +37,8 @@ export function parseRssFeed(xmlText, sourceId, sourceLogoUrl) {
                         item.querySelector('media\\:content[type^="image"]')?.getAttribute('url') ||
                         item.querySelector('image')?.getAttribute('url')
 
-        // Skip items missing required fields
-        if (!title || !description || !link) {
+        // Skip articles missing required fields: headline (title) or description
+        if (!title || title.length === 0 || !description || description.length === 0) {
           continue
         }
 

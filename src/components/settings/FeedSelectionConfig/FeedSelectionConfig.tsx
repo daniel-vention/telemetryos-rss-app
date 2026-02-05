@@ -10,8 +10,9 @@ import {
   SettingsCheckboxFrame,
   SettingsCheckboxLabel,
   SettingsBox,
+  SettingsInputFrame,
 } from '@telemetryos/sdk/react'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   useRssFeedsStoreState,
   useSelectedFeedsStoreState,
@@ -39,6 +40,7 @@ export function FeedSelectionConfig() {
   const [isLoadingDuration, articleDurationSec, setArticleDurationSec] = useArticleDurationStoreState(5)
   const [isLoadingInterval, refreshIntervalMin, setRefreshIntervalMin] = useRefreshIntervalStoreState(5)
   const [isLoadingTransition, transitionStyle, setTransitionStyle] = useTransitionStyleStoreState(0)
+  const [categoryFilter, setCategoryFilter] = useState('')
 
   const isLoading = isLoadingFeeds || isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition
 
@@ -60,6 +62,30 @@ export function FeedSelectionConfig() {
         return acc
       }, {} as Record<string, RssFeed[]>)
   }, [feeds])
+
+  // Filter categories based on filter text
+  const filteredCategories = useMemo(() => {
+    if (!categoryFilter.trim()) {
+      return feedsByCategory
+    }
+
+    const filterLower = categoryFilter.toLowerCase().trim()
+    const filtered: Record<string, RssFeed[]> = {}
+
+    Object.entries(feedsByCategory).forEach(([category, categoryFeeds]) => {
+      // Show category if category name matches OR any feed name matches
+      const categoryMatches = category.toLowerCase().includes(filterLower)
+      const feedMatches = categoryFeeds.some((feed) =>
+        feed.name.toLowerCase().includes(filterLower)
+      )
+
+      if (categoryMatches || feedMatches) {
+        filtered[category] = categoryFeeds
+      }
+    })
+
+    return filtered
+  }, [feedsByCategory, categoryFilter])
 
   // Get all feed IDs
   const allFeedIds = useMemo(() => feeds.map((feed) => feed.id), [feeds])
@@ -98,9 +124,9 @@ export function FeedSelectionConfig() {
         Select which feeds to display and configure article rotation settings.
       </SettingsHint>
 
-      {/* Select All / Deselect All */}
+      {/* Select All / Deselect All and Category Filter */}
       <SettingsField>
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <SettingsButtonFrame>
             <button
               type="button"
@@ -119,13 +145,25 @@ export function FeedSelectionConfig() {
               Deselect All
             </button>
           </SettingsButtonFrame>
+          <div style={{ flex: '1', minWidth: '200px' }}>
+            <SettingsInputFrame>
+              <input
+                type="text"
+                placeholder="Filter by category or feed name..."
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                disabled={isLoading}
+              />
+            </SettingsInputFrame>
+          </div>
         </div>
       </SettingsField>
 
       {/* Feed Selection by Category */}
       {Object.keys(feedsByCategory).length > 0 ? (
         <>
-          {Object.entries(feedsByCategory).map(([category, categoryFeeds]) => (
+          {Object.keys(filteredCategories).length > 0 ? (
+            Object.entries(filteredCategories).map(([category, categoryFeeds]) => (
             <div key={category} className="feed-selection-category">
               <SettingsHeading>
                 {category}
@@ -152,7 +190,14 @@ export function FeedSelectionConfig() {
                 })}
               </SettingsBox>
             </div>
-          ))}
+            ))
+          ) : (
+            <SettingsHint>
+              {categoryFilter.trim()
+                ? `No categories or feeds match "${categoryFilter}"`
+                : 'No feeds available. Add feeds in the RSS Feeds section above.'}
+            </SettingsHint>
+          )}
         </>
       ) : (
         <SettingsHint>No feeds available. Add feeds in the RSS Feeds section above.</SettingsHint>

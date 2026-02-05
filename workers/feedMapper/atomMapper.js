@@ -40,8 +40,8 @@ export function parseAtomFeed(xmlText, sourceId, sourceLogoUrl) {
                         entry.querySelector('media\\:content[type^="image"]')?.getAttribute('url') ||
                         entry.querySelector('enclosure[type^="image"]')?.getAttribute('url')
 
-        // Skip entries missing required fields
-        if (!title || !summary || !link) {
+        // Skip articles missing required fields: headline (title) or description
+        if (!title || title.length === 0 || !summary || summary.length === 0) {
           continue
         }
 

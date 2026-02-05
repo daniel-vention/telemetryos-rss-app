@@ -22,19 +22,19 @@ interface ArticleStageProps {
  * - Optional offline indicator
  */
 export function ArticleStage({ article, sourceName, isOffline = false }: ArticleStageProps) {
+  const hasImage = !!article.imageUrl
+
   return (
     <div className="article-stage">
-      <div className="article-stage__main">
+      <div className={`article-stage__main ${hasImage ? '' : 'article-stage__main--no-image'}`}>
         <div className="article-stage__content">
           <ArticleCard article={article} />
         </div>
-        <div className="article-stage__image">
-          {article.imageUrl ? (
+        {hasImage && (
+          <div className="article-stage__image">
             <img src={article.imageUrl} alt={article.title} className="article-stage__image-img" />
-          ) : (
-            <div className="article-stage__image-placeholder">Image</div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       <div className="article-stage__footer">
         <SourceBadge sourceName={sourceName || article.sourceId} logoUrl={article.sourceLogoUrl} />
