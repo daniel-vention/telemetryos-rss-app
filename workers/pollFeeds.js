@@ -91,14 +91,39 @@ async function pollFeeds() {
 
     // Count successful vs failed feeds
     const successfulFeeds = articleArrays.filter((articles) => articles.length > 0).length
-    const failedFeeds = feedsToPoll.length - successfulFeeds
     const allFeedsFailed = successfulFeeds === 0 && feedsToPoll.length > 0
 
     // Flatten and merge all articles
     const allArticles = articleArrays.flat()
 
+    // Deduplicate articles by link (same article from different feeds or duplicates)
+    const uniqueArticlesMap = new Map()
+    allArticles.forEach((article) => {
+      // Use link as unique identifier
+      if (article.link && !uniqueArticlesMap.has(article.link)) {
+        uniqueArticlesMap.set(article.link, article)
+      } else if (article.link && uniqueArticlesMap.has(article.link)) {
+        // If duplicate found, keep the one with the most recent publishedAt
+        const existing = uniqueArticlesMap.get(article.link)
+        if (article.publishedAt > existing.publishedAt) {
+          uniqueArticlesMap.set(article.link, article)
+        }
+      }
+    })
+
+    // Convert map back to array
+    const uniqueArticles = Array.from(uniqueArticlesMap.values())
+
+    // Sort by publication date (newest first)
+    uniqueArticles.sort((a, b) => b.publishedAt - a.publishedAt)
+
+    // Log deduplication stats
+    if (allArticles.length > uniqueArticles.length) {
+      console.log(`Deduplicated ${allArticles.length - uniqueArticles.length} duplicate article(s) (${allArticles.length} → ${uniqueArticles.length})`)
+    }
+
     // Log articles with images for debugging
-    const articlesWithImages = allArticles.filter((article) => article.imageUrl)
+    const articlesWithImages = uniqueArticles.filter((article) => article.imageUrl)
     if (articlesWithImages.length > 0) {
       console.log(`Found ${articlesWithImages.length} article(s) with images:`)
       articlesWithImages.forEach((article) => {
@@ -108,13 +133,10 @@ async function pollFeeds() {
       console.log('No articles with images found in this poll')
     }
 
-    // Sort by publication date (newest first)
-    allArticles.sort((a, b) => b.publishedAt - a.publishedAt)
-
     // Update cached articles in storage (even if empty, keep old articles)
     const existingArticles = await store().instance.get('cachedArticles', [])
-    if (allArticles.length > 0) {
-      await store().instance.set('cachedArticles', allArticles)
+    if (uniqueArticles.length > 0) {
+      await store().instance.set('cachedArticles', uniqueArticles)
     }
 
     const now = Date.now()
@@ -125,13 +147,6 @@ async function pollFeeds() {
     const isOffline = allFeedsFailed
     await store().instance.set('isOffline', isOffline)
 
-    if (allFeedsFailed) {
-      console.warn(`Feed poll complete but all ${feedsToPoll.length} feed(s) failed. Marking as offline.`)
-    } else if (failedFeeds > 0) {
-      console.log(`Feed poll complete. ${successfulFeeds} succeeded, ${failedFeeds} failed. Cached ${allArticles.length} articles.`)
-    } else {
-      console.log(`Feed poll complete. Cached ${allArticles.length} articles.`)
-    }
   } catch (error) {
     console.error('Error during feed poll:', error)
     // Don't throw - allow polling to continue on next interval
