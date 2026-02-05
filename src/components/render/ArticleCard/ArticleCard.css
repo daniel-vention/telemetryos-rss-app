@@ -9,7 +9,13 @@
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
+  padding: 1.5rem 2rem;
   text-shadow: 0.1rem 0.1rem 0.2rem rgba(0, 0, 0, 0.3);
+  /* Thick left border and thin border around title container */
+  border-left: 0.8rem solid currentColor;
+  border-right: 0.1rem solid rgba(255, 255, 255, 0.3);
+  border-top: 0.1rem solid rgba(255, 255, 255, 0.3);
+  border-bottom: 0.1rem solid rgba(255, 255, 255, 0.3);
   /* Truncate long headlines with ellipsis */
   overflow: hidden;
   display: -webkit-box;
@@ -22,6 +28,9 @@
   font-size: 3rem;
   line-height: 1.5;
   margin: 0;
+  padding: 2rem;
+  /* Greyish background */
+  background-color: rgba(120, 120, 120, 0.15);
   /* Truncate long descriptions with ellipsis */
   overflow: hidden;
   display: -webkit-box;

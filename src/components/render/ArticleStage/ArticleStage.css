@@ -38,7 +38,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 0.5rem;
+  /* Straight border, no rounding */
+  border-radius: 0;
 }
 
 .article-stage__image-placeholder {
@@ -57,8 +58,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 2rem;
-  border-top: 0.1rem solid rgba(255, 255, 255, 0.2);
+  padding: 2rem 3rem;
+  margin-top: 2rem;
+  /* Visual separation for bottom section */
+  border-top: 0.2rem solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0;
 }
 
 .article-stage__offline-indicator {

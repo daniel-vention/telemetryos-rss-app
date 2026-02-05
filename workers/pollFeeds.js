@@ -97,6 +97,17 @@ async function pollFeeds() {
     // Flatten and merge all articles
     const allArticles = articleArrays.flat()
 
+    // Log articles with images for debugging
+    const articlesWithImages = allArticles.filter((article) => article.imageUrl)
+    if (articlesWithImages.length > 0) {
+      console.log(`Found ${articlesWithImages.length} article(s) with images:`)
+      articlesWithImages.forEach((article) => {
+        console.log(`  - "${article.title}" (${article.sourceId}): ${article.imageUrl}`)
+      })
+    } else {
+      console.log('No articles with images found in this poll')
+    }
+
     // Sort by publication date (newest first)
     allArticles.sort((a, b) => b.publishedAt - a.publishedAt)
 
