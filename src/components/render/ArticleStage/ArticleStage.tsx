@@ -39,12 +39,13 @@ export function ArticleStage({ article, sourceName, isOffline = false }: Article
       <div className="article-stage__footer">
         <SourceBadge sourceName={sourceName || article.sourceId} logoUrl={article.sourceLogoUrl} />
         <TimeAgo timestamp={article.publishedAt} />
-      </div>
-      {isOffline && (
+        {isOffline && (
         <div className="article-stage__offline-indicator">
           Content may not be current
         </div>
       )}
+      </div>
+      
     </div>
   )
 }

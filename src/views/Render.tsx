@@ -12,6 +12,7 @@ import {
   useTransitionStyleStoreState,
   useCachedArticlesStoreState,
   useRssFeedsStoreState,
+  useIsOfflineStoreState,
 } from '../hooks/store'
 import type { AppConfig } from '../types'
 import './Render.css'
@@ -31,6 +32,7 @@ export function Render() {
   const [isLoadingTransition, transitionStyle] = useTransitionStyleStoreState()
   const [isLoadingCachedArticles, cachedArticles] = useCachedArticlesStoreState()
   const [isLoadingFeeds, feeds] = useRssFeedsStoreState()
+  const [isLoadingOffline, isOffline] = useIsOfflineStoreState()
 
   // Build config from instance storage - automatically subscribes to changes
   const config: AppConfig = {
@@ -40,7 +42,7 @@ export function Render() {
     transitionStyle,
   }
 
-  const isLoading = isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition || isLoadingCachedArticles || isLoadingFeeds
+  const isLoading = isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition || isLoadingCachedArticles || isLoadingFeeds || isLoadingOffline
 
   // Start feed polling worker if in development mode
   useEffect(() => {
@@ -53,6 +55,8 @@ export function Render() {
       })
     }
   }, [])
+
+  // Offline status is determined solely by worker: true only when all feed requests fail
 
   // Show empty state if no feeds selected
   if (!isLoadingSelected && selectedFeeds.length === 0) {
@@ -71,7 +75,7 @@ export function Render() {
         feeds={feeds || []}
         durationSec={articleDurationSec}
         transitionStyle={transitionStyle}
-        isOffline={false}
+        isOffline={isOffline}
       />
     </NewsFeedsContainer>
   )

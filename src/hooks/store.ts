@@ -17,4 +17,6 @@ export const useRefreshIntervalStoreState = createUseInstanceStoreState<number>(
 
 export const useTransitionStyleStoreState = createUseInstanceStoreState<TransitionStyle>('transitionStyle', DEFAULT_CONFIG.transitionStyle)
 
-export const useRandomStringStoreState = createUseInstanceStoreState<string>('randomString', '')
+export const useIsOfflineStoreState = createUseInstanceStoreState<boolean>('isOffline', false)
+
+export const useLastUpdatedAtStoreState = createUseInstanceStoreState<number>('lastUpdatedAt', 0)

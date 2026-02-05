@@ -89,17 +89,38 @@ async function pollFeeds() {
       feedsToPoll.map((feed) => fetchFeed(feed))
     )
 
+    // Count successful vs failed feeds
+    const successfulFeeds = articleArrays.filter((articles) => articles.length > 0).length
+    const failedFeeds = feedsToPoll.length - successfulFeeds
+    const allFeedsFailed = successfulFeeds === 0 && feedsToPoll.length > 0
+
     // Flatten and merge all articles
     const allArticles = articleArrays.flat()
 
     // Sort by publication date (newest first)
     allArticles.sort((a, b) => b.publishedAt - a.publishedAt)
 
-    // Update cached articles in storage
-    await store().instance.set('cachedArticles', allArticles)
-    await store().instance.set('lastUpdatedAt', Date.now())
+    // Update cached articles in storage (even if empty, keep old articles)
+    const existingArticles = await store().instance.get('cachedArticles', [])
+    if (allArticles.length > 0) {
+      await store().instance.set('cachedArticles', allArticles)
+    }
 
-    console.log(`Feed poll complete. Cached ${allArticles.length} articles.`)
+    const now = Date.now()
+    await store().instance.set('lastUpdatedAt', now)
+
+    // Set offline status ONLY if all feeds failed
+    // If at least one feed succeeds, we're online (even if some feeds failed)
+    const isOffline = allFeedsFailed
+    await store().instance.set('isOffline', isOffline)
+
+    if (allFeedsFailed) {
+      console.warn(`Feed poll complete but all ${feedsToPoll.length} feed(s) failed. Marking as offline.`)
+    } else if (failedFeeds > 0) {
+      console.log(`Feed poll complete. ${successfulFeeds} succeeded, ${failedFeeds} failed. Cached ${allArticles.length} articles.`)
+    } else {
+      console.log(`Feed poll complete. Cached ${allArticles.length} articles.`)
+    }
   } catch (error) {
     console.error('Error during feed poll:', error)
     // Don't throw - allow polling to continue on next interval
