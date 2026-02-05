@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { NewsFeedsContainer } from '../components/render/NewsFeedsContainer/NewsFeedsContainer'
-import { ArticleStage } from '../components/render/ArticleStage/ArticleStage'
+import { ArticleRotator } from '../components/render/ArticleRotator/ArticleRotator'
 import { EmptyState } from '../components/render/EmptyState/EmptyState'
 import {
   useUiScaleStoreState,
@@ -10,10 +10,10 @@ import {
   useArticleDurationStoreState,
   useRefreshIntervalStoreState,
   useTransitionStyleStoreState,
-  useRandomStringStoreState,
   useCachedArticlesStoreState,
+  useRssFeedsStoreState,
 } from '../hooks/store'
-import type { AppConfig, Article } from '../types'
+import type { AppConfig } from '../types'
 import './Render.css'
 
 /**
@@ -30,6 +30,8 @@ export function Render() {
   const [isLoadingInterval, refreshIntervalMin] = useRefreshIntervalStoreState()
   const [isLoadingTransition, transitionStyle] = useTransitionStyleStoreState()
   const [isLoadingCachedArticles, cachedArticles] = useCachedArticlesStoreState()
+  const [isLoadingFeeds, feeds] = useRssFeedsStoreState()
+
   // Build config from instance storage - automatically subscribes to changes
   const config: AppConfig = {
     selectedFeeds,
@@ -38,9 +40,9 @@ export function Render() {
     transitionStyle,
   }
 
-  const isLoading = isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition || isLoadingCachedArticles
+  const isLoading = isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition || isLoadingCachedArticles || isLoadingFeeds
 
-  // Start feed polling worker if VITE_SIMULATE_WORKER is enabled
+  // Start feed polling worker if in development mode
   useEffect(() => {
     const simulateWorker = import.meta.env.MODE === 'development'
     if (simulateWorker) {
@@ -52,30 +54,25 @@ export function Render() {
     }
   }, [])
 
-  // Hardcoded article for layout preview
-  const dummyArticle: Article = {
-    title: 'Major Breakthrough in Renewable Energy Technology',
-    description: 'Scientists have developed a new solar panel technology that increases efficiency by 40% while reducing manufacturing costs. The innovation uses advanced nanomaterials to capture more sunlight throughout the day, even in cloudy conditions. This breakthrough could accelerate the global transition to clean energy.',
-    link: 'https://example.com/article',
-    publishedAt: Date.now() - 2 * 60 * 60 * 1000, // 2 hours ago
-    sourceId: 'bbc',
-    imageUrl: undefined, // No image for now
-    sourceLogoUrl: undefined,
+  // Show empty state if no feeds selected
+  if (!isLoadingSelected && selectedFeeds.length === 0) {
+    return (
+      <NewsFeedsContainer uiScale={uiScale} config={config} isLoading={isLoading}>
+        <EmptyState />
+      </NewsFeedsContainer>
+    )
   }
 
+  // Show article rotator with cached articles
   return (
     <NewsFeedsContainer uiScale={uiScale} config={config} isLoading={isLoading}>
-      {!isLoadingSelected && selectedFeeds.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <>
-          <ArticleStage article={dummyArticle} sourceName="BBC" />
-        </>
-      )}
-      <div className="random-string-container">
-        Cached articles: {Array.isArray(cachedArticles) ? cachedArticles.length : 0}
-      </div>
-      
+      <ArticleRotator
+        articles={cachedArticles || []}
+        feeds={feeds || []}
+        durationSec={articleDurationSec}
+        transitionStyle={transitionStyle}
+        isOffline={false}
+      />
     </NewsFeedsContainer>
   )
 }
