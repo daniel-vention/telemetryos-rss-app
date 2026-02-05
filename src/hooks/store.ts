@@ -5,8 +5,6 @@ import { DEFAULT_CONFIG } from '../types'
 
 export const useUiScaleStoreState = createUseInstanceStoreState<number>('ui-scale', 1)
 
-export const useSubtitleStoreState = createUseInstanceStoreState<string>('subtitle', 'Change this line in settings ⚙️ ↗️')
-
 export const useRssFeedsStoreState = createUseInstanceStoreState<RssFeed[]>('rssFeeds', [])
 
 export const useSelectedFeedsStoreState = createUseInstanceStoreState<string[]>('selectedFeeds', DEFAULT_CONFIG.selectedFeeds)

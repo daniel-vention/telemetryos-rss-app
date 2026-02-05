@@ -1,0 +1,177 @@
+import { configure, store, proxy } from '@telemetryos/sdk'
+import { parseFeed } from './feedMapper/index.js'
+
+// Configure SDK - REQUIRED for workers to function
+configure('telemetryos-rss-app')
+
+const FETCH_TIMEOUT_MS = 30000 // 30 seconds
+const DEFAULT_REFRESH_INTERVAL_MIN = 15
+
+/**
+ * Fetch a single feed and parse articles
+ * @param {Object} feed - Feed object with id, url, name, logoUrl
+ * @returns {Promise<Array>} Array of parsed articles
+ */
+async function fetchFeed(feed) {
+  try {
+    console.log(`Fetching feed: ${feed.name} (${feed.id})`)
+
+    // Fetch with timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+
+    try {
+      const response = await proxy().fetch(feed.url, {
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const xmlText = await response.text()
+
+      if (!xmlText || xmlText.trim().length === 0) {
+        throw new Error('Empty response from feed')
+      }
+
+      // Parse feed and normalize articles
+      const articles = parseFeed(xmlText, feed.id, feed.logoUrl)
+
+      console.log(`Successfully parsed ${articles.length} articles from ${feed.name}`)
+      return articles
+    } catch (fetchError) {
+      clearTimeout(timeoutId)
+      throw fetchError
+    }
+  } catch (error) {
+    // Log error but don't throw - continue with other feeds
+    console.warn(`Failed to fetch feed ${feed.name} (${feed.id}):`, error.message)
+    return []
+  }
+}
+
+/**
+ * Fetch all selected feeds and update cached articles
+ */
+async function pollFeeds() {
+  try {
+    console.log('Starting feed poll...')
+
+    // Get feeds and selected feeds from storage
+    const feeds = await store().instance.get('rssFeeds', [])
+    const selectedFeeds = await store().instance.get('selectedFeeds', [])
+
+    if (!feeds || feeds.length === 0) {
+      console.log('No feeds configured')
+      return
+    }
+
+    if (!selectedFeeds || selectedFeeds.length === 0) {
+      console.log('No feeds selected')
+      return
+    }
+
+    // Filter to only selected feeds
+    const feedsToPoll = feeds.filter((feed) => selectedFeeds.includes(feed.id))
+
+    if (feedsToPoll.length === 0) {
+      console.log('No selected feeds to poll')
+      return
+    }
+
+    console.log(`Polling ${feedsToPoll.length} selected feed(s)...`)
+
+    // Fetch all feeds in parallel (with error handling per feed)
+    const articleArrays = await Promise.all(
+      feedsToPoll.map((feed) => fetchFeed(feed))
+    )
+
+    // Flatten and merge all articles
+    const allArticles = articleArrays.flat()
+
+    // Sort by publication date (newest first)
+    allArticles.sort((a, b) => b.publishedAt - a.publishedAt)
+
+    // Update cached articles in storage
+    await store().instance.set('cachedArticles', allArticles)
+    await store().instance.set('lastUpdatedAt', Date.now())
+
+    console.log(`Feed poll complete. Cached ${allArticles.length} articles.`)
+  } catch (error) {
+    console.error('Error during feed poll:', error)
+    // Don't throw - allow polling to continue on next interval
+  }
+}
+
+/**
+ * Start polling feeds at configured interval
+ */
+async function startPolling() {
+  // Initial poll
+  await pollFeeds()
+
+  // Set up interval polling
+  let intervalId = null
+
+  const scheduleNextPoll = async () => {
+    try {
+      // Get refresh interval from storage (default 15 minutes)
+      const refreshIntervalMin = await store().instance.get('refreshIntervalMin', DEFAULT_REFRESH_INTERVAL_MIN)
+      const intervalMs = refreshIntervalMin * 60 * 1000
+
+      // Clear existing interval if any
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+
+      // Set up new interval
+      intervalId = setInterval(async () => {
+        await pollFeeds()
+      }, intervalMs)
+
+      console.log(`Feed polling scheduled every ${refreshIntervalMin} minutes`)
+    } catch (error) {
+      console.error('Error scheduling feed poll:', error)
+      // Retry with default interval
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+      intervalId = setInterval(async () => {
+        await pollFeeds()
+      }, DEFAULT_REFRESH_INTERVAL_MIN * 60 * 1000)
+    }
+  }
+
+  // Schedule initial interval
+  await scheduleNextPoll()
+
+  // Subscribe to selectedFeeds changes - trigger immediate poll when feeds are selected/deselected
+  const selectedFeedsHandler = async (newSelectedFeeds) => {
+    console.log('Selected feeds changed, triggering immediate poll...')
+    await pollFeeds()
+  }
+
+  store().instance.subscribe('selectedFeeds', selectedFeedsHandler)
+
+  // Subscribe to refreshIntervalMin changes - update polling interval
+  const refreshIntervalHandler = async (newInterval) => {
+    console.log(`Refresh interval changed to ${newInterval} minutes, updating schedule...`)
+    await scheduleNextPoll()
+  }
+
+  store().instance.subscribe('refreshIntervalMin', refreshIntervalHandler)
+
+  console.log('Subscribed to storage changes for selectedFeeds and refreshIntervalMin')
+}
+
+// Start polling
+startPolling().catch((error) => {
+  console.error('Failed to start feed polling:', error)
+})
+
+console.log('Feed polling worker initialized')

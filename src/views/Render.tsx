@@ -1,3 +1,6 @@
+/// <reference types="vite/client" />
+
+import { useEffect } from 'react'
 import { NewsFeedsContainer } from '../components/render/NewsFeedsContainer/NewsFeedsContainer'
 import { ArticleStage } from '../components/render/ArticleStage/ArticleStage'
 import { EmptyState } from '../components/render/EmptyState/EmptyState'
@@ -8,6 +11,7 @@ import {
   useRefreshIntervalStoreState,
   useTransitionStyleStoreState,
   useRandomStringStoreState,
+  useCachedArticlesStoreState,
 } from '../hooks/store'
 import type { AppConfig, Article } from '../types'
 import './Render.css'
@@ -25,8 +29,7 @@ export function Render() {
   const [isLoadingDuration, articleDurationSec] = useArticleDurationStoreState()
   const [isLoadingInterval, refreshIntervalMin] = useRefreshIntervalStoreState()
   const [isLoadingTransition, transitionStyle] = useTransitionStyleStoreState()
-  const [isLoadingRandomString, randomString] = useRandomStringStoreState()
-
+  const [isLoadingCachedArticles, cachedArticles] = useCachedArticlesStoreState()
   // Build config from instance storage - automatically subscribes to changes
   const config: AppConfig = {
     selectedFeeds,
@@ -35,7 +38,19 @@ export function Render() {
     transitionStyle,
   }
 
-  const isLoading = isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition
+  const isLoading = isLoadingSelected || isLoadingDuration || isLoadingInterval || isLoadingTransition || isLoadingCachedArticles
+
+  // Start feed polling worker if VITE_SIMULATE_WORKER is enabled
+  useEffect(() => {
+    const simulateWorker = import.meta.env.MODE === 'development'
+    if (simulateWorker) {
+      // Dynamically import and start the worker
+      // @ts-expect-error - Dynamic import of JS worker file
+      import('../../workers/pollFeeds.js').catch((error) => {
+        console.error('Failed to load feed polling worker:', error)
+      })
+    }
+  }, [])
 
   // Hardcoded article for layout preview
   const dummyArticle: Article = {
@@ -58,7 +73,7 @@ export function Render() {
         </>
       )}
       <div className="random-string-container">
-        sample text {isLoadingRandomString ? 'loading...' : randomString}
+        Cached articles: {Array.isArray(cachedArticles) ? cachedArticles.length : 0}
       </div>
       
     </NewsFeedsContainer>

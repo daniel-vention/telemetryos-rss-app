@@ -8,7 +8,7 @@
   },
   "workers": [
     {
-      "script": "./workers/randomStringWorker.js"
+      "script": "./workers/pollFeeds.js"
     }
   ],
   "devServer": {

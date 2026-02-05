@@ -7,11 +7,10 @@ import {
   SettingsSliderFrame,
 } from '@telemetryos/sdk/react'
 import { RssFeedManager, FeedSelectionConfig } from '../components/settings'
-import { useSubtitleStoreState, useUiScaleStoreState } from '../hooks/store'
+import { useUiScaleStoreState } from '../hooks/store'
 
 export function Settings() {
   const [isLoadingUiScale, uiScale, setUiScale] = useUiScaleStoreState(5)
-  const [isLoading, subtitle, setSubtitle] = useSubtitleStoreState(250)
 
   return (
     <SettingsContainer>
@@ -37,19 +36,6 @@ export function Settings() {
       </SettingsField>
 
       <SettingsDivider />
-
-      <SettingsField>
-        <SettingsLabel>Subtitle Text</SettingsLabel>
-        <SettingsInputFrame>
-          <input
-            type="text"
-            placeholder='Some text for the subtitle...'
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            disabled={isLoading}
-          />
-        </SettingsInputFrame>
-      </SettingsField>
     </SettingsContainer>
   )
 }
