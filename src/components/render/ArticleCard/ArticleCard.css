@@ -2,6 +2,21 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  height: 100%;
+}
+
+.article-card__image-container {
+  width: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.article-card__image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
 }
 
 .article-card__title {
@@ -22,6 +37,7 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .article-card__description {
@@ -37,4 +53,18 @@
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Horizontal layout: description should fill available space */
+.article-stage--horizontal .article-card__description {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Vertical layout: image at top takes space, description fills remaining */
+.article-stage--vertical .article-card__description {
+  flex: 1;
+  min-height: 0;
 }

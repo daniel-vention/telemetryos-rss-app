@@ -32,7 +32,6 @@ export function TimeAgo({ timestamp }: TimeAgoProps) {
 
   return (
     <div className="time-ago">
-      <span className="time-ago__label">Recency timestamp:</span>
       <span className="time-ago__value">{timeAgo}</span>
     </div>
   )
