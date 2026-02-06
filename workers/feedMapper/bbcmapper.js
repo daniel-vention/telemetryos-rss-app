@@ -1,17 +1,18 @@
 /**
- * RSS Feed Mapper
+ * BBC News RSS Feed Mapper
  * 
- * Parses RSS 2.0 XML format and normalizes items to Article format
+ * Specialized parser for BBC News RSS feeds with enhanced image extraction
+ * Handles media:thumbnail namespace elements and channel logo extraction
  */
 
 /**
- * Parse RSS feed XML and extract articles
+ * Parse BBC News RSS feed XML and extract articles
  * @param {string} xmlText - Raw RSS XML text
- * @param {string} sourceId - Source feed ID
- * @param {string} sourceLogoUrl - Optional source logo URL
+ * @param {string} sourceId - Source feed ID (should be 'bbc-news')
+ * @param {string} sourceLogoUrl - Optional source logo URL (overrides channel image)
  * @returns {Array} Array of normalized Article objects
  */
-export function parseRssFeed(xmlText, sourceId, sourceLogoUrl) {
+export function parseBbcFeed(xmlText, sourceId, sourceLogoUrl) {
   try {
     const parser = new DOMParser()
     const doc = parser.parseFromString(xmlText, 'text/xml')
@@ -19,11 +20,11 @@ export function parseRssFeed(xmlText, sourceId, sourceLogoUrl) {
     // Check for parsing errors
     const parseError = doc.querySelector('parsererror')
     if (parseError) {
-      throw new Error('RSS parsing error: ' + parseError.textContent)
+      throw new Error('BBC RSS parsing error: ' + parseError.textContent)
     }
 
     // Extract channel image URL if no sourceLogoUrl provided
-    // RSS feeds can have <channel><image><url> for the feed logo
+    // BBC feeds have <channel><image><url> for the feed logo
     let feedLogoUrl = sourceLogoUrl
     if (!feedLogoUrl) {
       const channelImage = doc.querySelector('channel > image > url')
@@ -35,6 +36,9 @@ export function parseRssFeed(xmlText, sourceId, sourceLogoUrl) {
     const items = doc.querySelectorAll('item')
     const articles = []
 
+    // Media RSS namespace for BBC feeds
+    const mediaNS = 'http://search.yahoo.com/mrss/'
+
     for (const item of items) {
       try {
         const title = item.querySelector('title')?.textContent?.trim()
@@ -44,11 +48,40 @@ export function parseRssFeed(xmlText, sourceId, sourceLogoUrl) {
         const link = item.querySelector('link')?.textContent?.trim()
         const pubDate = item.querySelector('pubDate')?.textContent?.trim()
         
-        // Extract article image from various RSS patterns
-        let imageUrl = item.querySelector('enclosure[type^="image"]')?.getAttribute('url') ||
-                       item.querySelector('media\\:content[type^="image"]')?.getAttribute('url') ||
-                       item.querySelector('media\\:thumbnail')?.getAttribute('url') ||
-                       item.querySelector('image')?.getAttribute('url')
+        // Extract article image from BBC RSS patterns
+        // BBC uses media:thumbnail with url attribute
+        let imageUrl = null
+        
+        // Primary method: Use namespace-aware method for media:thumbnail
+        const thumbnails = item.getElementsByTagNameNS(mediaNS, 'thumbnail')
+        if (thumbnails.length > 0) {
+          imageUrl = thumbnails[0].getAttribute('url')
+        }
+        
+        // Fallback to querySelector (works in some parsers)
+        if (!imageUrl) {
+          const mediaThumbnail = item.querySelector('media\\:thumbnail')
+          if (mediaThumbnail) {
+            imageUrl = mediaThumbnail.getAttribute('url')
+          }
+        }
+        
+        // Try media:content for images
+        if (!imageUrl) {
+          const mediaContents = item.getElementsByTagNameNS(mediaNS, 'content')
+          for (let i = 0; i < mediaContents.length; i++) {
+            const type = mediaContents[i].getAttribute('type') || ''
+            if (type.startsWith('image')) {
+              imageUrl = mediaContents[i].getAttribute('url')
+              break
+            }
+          }
+        }
+        
+        // Try enclosure as fallback
+        if (!imageUrl) {
+          imageUrl = item.querySelector('enclosure[type^="image"]')?.getAttribute('url')
+        }
         
         // If no image found, try extracting from description HTML
         if (!imageUrl && description) {
@@ -93,13 +126,13 @@ export function parseRssFeed(xmlText, sourceId, sourceLogoUrl) {
         })
       } catch (itemError) {
         // Skip malformed items, continue with others
-        console.warn(`Failed to parse RSS item for ${sourceId}:`, itemError)
+        console.warn(`Failed to parse BBC RSS item for ${sourceId}:`, itemError)
         continue
       }
     }
 
     return articles
   } catch (error) {
-    throw new Error(`RSS feed parsing failed for ${sourceId}: ${error.message}`)
+    throw new Error(`BBC RSS feed parsing failed for ${sourceId}: ${error.message}`)
   }
 }

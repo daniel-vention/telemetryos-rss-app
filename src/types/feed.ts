@@ -43,13 +43,13 @@ export const DEFAULT_FEEDS: RssFeed[] = [
   {
     id: 'reuters',
     name: 'Reuters',
-    url: 'https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best',
+    url: 'https://ir.thomsonreuters.com/rss/news-releases.xml',
     category: 'News',
   },
   {
     id: 'ap-news',
     name: 'AP News',
-    url: 'https://apnews.com/apf-topnews',
+    url: 'https://apnews.com/index.rss',
     category: 'News',
   },
   {
@@ -64,6 +64,7 @@ export const DEFAULT_FEEDS: RssFeed[] = [
     name: 'ESPN',
     url: 'https://www.espn.com/espn/rss/news',
     category: 'Sport',
+    logoUrl: 'https://a.espncdn.com/i/espn/teamlogos/lrg/trans/espn_dotcom_black.gif',  
   },
   // Finance (2 feeds)
   {
@@ -75,8 +76,9 @@ export const DEFAULT_FEEDS: RssFeed[] = [
   {
     id: 'bloomberg',
     name: 'Bloomberg',
-    url: 'https://www.bloomberg.com/feed/topics/economics',
+    url: 'https://feeds.bloomberg.com/economics/news.rss',
     category: 'Finance',
+    logoUrl: 'https://www.bloomberg.com/feeds/static/images/bloomberg_logo_blue.png',
   },
   // Tech (1 feed)
   {
@@ -95,13 +97,13 @@ export const DEFAULT_FEEDS: RssFeed[] = [
   {
     id: 'environment-canada',
     name: 'Environment Canada',
-    url: 'https://weather.gc.ca/rss/city/on-118_e.xml',
+    url: 'https://natural-resources.canada.ca/stories/simply-science/rss.xml',
     category: 'Weather/Safety',
   },
   {
     id: 'fema',
     name: 'FEMA',
-    url: 'https://www.fema.gov/rss/news.xml',
+    url: 'https://www.fema.gov/news/news_region-i.rss',
     category: 'Weather/Safety',
   },
   // Science (1 feed)
@@ -117,5 +119,6 @@ export const DEFAULT_FEEDS: RssFeed[] = [
     name: 'Variety',
     url: 'https://variety.com/feed/',
     category: 'Entertainment',
+    logoUrl: 'https://variety.com/wp-content/uploads/2018/06/variety-favicon.png',
   },
 ]
